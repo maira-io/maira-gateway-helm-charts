@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "maira-agent.fullname" . }}-config"
+  labels:
+{{ include "maira-agent.labels" . | indent 4 }}
+data:
+  clutch-config.yml: |-
+    gateway:
+      logger:
+        pretty: true
+        level: DEBUG
+      accesslog:
+        # log http 5xx errors by default
+        status_code_filters:
+          # Unknown - http.StatusInternalServerError
+          - equals: 2
+          # DeadlineExceeded - http.StatusInternalServerError
+          - equals: 4
+          # Unimplemented - http.StatusNotImplemented
+          - equals: 12
+          # Unavailable - http.StatusServiceUnavailable
+          - equals: 14
+      stats:
+        flush_interval: 1s
+        log_reporter: {}
+      timeouts:
+        default: 15s
+      middleware:
+        - name: clutch.middleware.stats
+        - name: clutch.middleware.validate
+      listener:
+        tcp:
+          address: 0.0.0.0
+          port: 8080
+          secure: false
+    modules:
+      - name: clutch.module.assets
+      - name: clutch.module.healthcheck
+      - name: clutch.module.resolver
+      - name: clutch.module.aws
+      - name: clutch.module.envoytriage
+      - name: clutch.module.k8s
+      - name: maira_io.module.k8s
+      - name: clutch.module.kinesis
+      - name: maira_io.module.elasticsearch
+      - name: maira_io.module.kafka
+      - name: maira_io.module.http
+      - name: maira_io.module.maira
+    services:
+      - name: clutch.service.aws
+        typed_config:
+          "@type": types.google.com/clutch.config.service.aws.v1.Config
+          regions:
+            - us-east-1
+            - us-west-2
+      - name: clutch.service.envoyadmin
+        typed_config:
+          "@type": types.google.com/clutch.config.service.envoyadmin.v1.Config
+          secure: false
+          default_remote_port: 9876
+      - name: clutch.service.k8s
+        typed_config:
+          "@type": types.google.com/clutch.config.service.k8s.v1.Config
+      - name: maira_io.service.k8s
+        typed_config:
+          "@type": types.google.com/clutch.config.service.k8s.v1.Config
+      - name: maira_io.service.elasticsearch
+        typed_config:
+          "@type": types.google.com/clutch.config.service.elasticsearch.v1.Config
+          addresses:
+            - "http://localhost:9200"
+          username: elastic
+          password: changeme
+      - name: maira_io.service.kafka
+        typed_config:
+          "@type": types.google.com/maira_io.config.service.kafka.v1.Config
+          config: default-localhost:9093,localhost:9094,localhost:9095
+      - name: maira_io.service.http
+        typed_config:
+          "@type": types.google.com/maira_io.config.service.http.v1.Config
+          clusters:
+            - name: elastic-1
+              addresses:
+                - "http://localhost:9200"
+              request_headers_add:
+                "content-type": "application/json"
+            - name: kafka-default
+              addresses:
+                - "http://localhost:9093"
+                - "http://localhost:9094"
+                - "http://localhost:9095"
+            - name: test-default
+              addresses:
+                - "https://jsonplaceholder.typicode.com/"
+              request_headers_add:
+                "test-header-key": "test-header-value"
+              request_headers_remove:
+                - "test-remove-key"
+              response_headers_add:
+                "test-header-key": "test-header-value"
+              response_headers_remove:
+                - "test-remove-key"
+              tls_config:
+                cert_file: ./certs/dev/localhost.crt
+                key_file: ./certs/dev/localhost.key
+                ca_cert: ./certs/dev/CA.crt
+                insecure: false
+      - name: maira_io.service.maira
+        typed_config:
+          "@type": types.google.com/maira_io.config.service.maira.v1.Config
+          site_manager_address: {{ .Values.maira.siteManagerAddress }}
+          site_name: {{ .Values.maira.site }}
+          namespace: {{ .Values.maira.namespace }}
+          tenant: {{ .Values.maira.tenant }}
+    resolvers:
+      - name: clutch.resolver.aws
+      - name: clutch.resolver.k8s
+
