@@ -5,7 +5,7 @@
 replicaCount: 1
 maira:
   siteManagerAddress: "sitemanager.demo.maira.io:443"
-  site: site-1
+  site: maira-site-1
   tenant: tenant-1
   namespace: default
 

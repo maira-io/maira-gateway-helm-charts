@@ -43,7 +43,6 @@ data:
       - name: clutch.module.k8s
       - name: maira_io.module.k8s
       - name: clutch.module.kinesis
-      - name: maira_io.module.elasticsearch
       - name: maira_io.module.kafka
       - name: maira_io.module.http
       - name: maira_io.module.maira
@@ -65,13 +64,6 @@ data:
       - name: maira_io.service.k8s
         typed_config:
           "@type": types.google.com/clutch.config.service.k8s.v1.Config
-      - name: maira_io.service.elasticsearch
-        typed_config:
-          "@type": types.google.com/clutch.config.service.elasticsearch.v1.Config
-          addresses:
-            - "http://localhost:9200"
-          username: elastic
-          password: changeme
       - name: maira_io.service.kafka
         typed_config:
           "@type": types.google.com/maira_io.config.service.kafka.v1.Config
@@ -80,16 +72,11 @@ data:
         typed_config:
           "@type": types.google.com/maira_io.config.service.http.v1.Config
           clusters:
-            - name: elastic-1
+            - name: elastic-default
               addresses:
                 - "http://localhost:9200"
               request_headers_add:
                 "content-type": "application/json"
-            - name: kafka-default
-              addresses:
-                - "http://localhost:9093"
-                - "http://localhost:9094"
-                - "http://localhost:9095"
             - name: test-default
               addresses:
                 - "https://jsonplaceholder.typicode.com/"
