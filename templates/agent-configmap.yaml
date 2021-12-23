@@ -68,6 +68,14 @@ data:
         typed_config:
           "@type": types.google.com/maira_io.config.service.kafka.v1.Config
           config: default-localhost:9093,localhost:9094,localhost:9095
+          clusters:
+            default:
+              broker_addresses: [localhost:9093,localhost:9094,localhost:9095]
+              tls_config:
+                cert_file: ./certs/dev/localhost.crt
+                key_file: ./certs/dev/localhost.key
+                ca_cert: ./certs/dev/CA.crt
+                insecure: false
       - name: maira_io.service.http
         typed_config:
           "@type": types.google.com/maira_io.config.service.http.v1.Config
@@ -77,22 +85,12 @@ data:
                 - "http://localhost:9200"
               request_headers_add:
                 "content-type": "application/json"
-            - name: test-default
-              addresses:
-                - "https://jsonplaceholder.typicode.com/"
-              request_headers_add:
-                "test-header-key": "test-header-value"
-              request_headers_remove:
-                - "test-remove-key"
-              response_headers_add:
-                "test-header-key": "test-header-value"
-              response_headers_remove:
-                - "test-remove-key"
-              tls_config:
-                cert_file: ./certs/dev/localhost.crt
-                key_file: ./certs/dev/localhost.key
-                ca_cert: ./certs/dev/CA.crt
-                insecure: false
+              service_name: elasticsearch
+                tls_config:
+                  cert_file: ./certs/dev/localhost.crt
+                  key_file: ./certs/dev/localhost.key
+                  ca_cert: ./certs/dev/CA.crt
+                  insecure: false
       - name: maira_io.service.maira
         typed_config:
           "@type": types.google.com/maira_io.config.service.maira.v1.Config

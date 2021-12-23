@@ -4,13 +4,13 @@
 
 replicaCount: 1
 maira:
-  siteManagerAddress: "sitemanager.demo.maira.io:443"
+  siteManagerAddress: ""
   site: maira-site-1
   tenant: tenant-1
   namespace: default
 
 image:
-  repository: gcr.io/macro-context-293714/maira-agent
+  repository: gcr.io/maira-public/maira-agent
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
