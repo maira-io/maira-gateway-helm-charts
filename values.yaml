@@ -85,3 +85,11 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+scope:
+  # tells Maira to only use resources in the namespace or namespace set by namespace.name
+  singleNamespace: false
