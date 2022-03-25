@@ -4,10 +4,13 @@
 
 replicaCount: 1
 maira:
+  #siteManagerAddress: "sitemanager.demo.maira.io:443"
   siteManagerAddress: ""
   site: maira-site-1
-  tenant: tenant-1
+  tenant: maira.io
   namespace: default
+  auth_client_id: id1
+  auth_client_secret: secret1
 
 image:
   repository: gcr.io/maira-public/maira-agent
