@@ -12,9 +12,18 @@ maira:
   auth_client_id: id1
   auth_client_secret: secret1
 
+appd:
+  url: url
+  client_id: client_id
+  client_secret:  client_secret
+  token_url: token_url
+
+gcp:
+  default_project: project
+
 image:
   repository: gcr.io/maira-public/maira-agent
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
 

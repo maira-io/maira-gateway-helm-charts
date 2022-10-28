@@ -14,13 +14,13 @@ data:
         # log http 5xx errors by default
         status_code_filters:
           # Unknown - http.StatusInternalServerError
-          - equals: 2
+          #- equals: 2
           # DeadlineExceeded - http.StatusInternalServerError
-          - equals: 4
+          #- equals: 4
           # Unimplemented - http.StatusNotImplemented
-          - equals: 12
+          #- equals: 12
           # Unavailable - http.StatusServiceUnavailable
-          - equals: 14
+          #- equals: 14
       stats:
         flush_interval: 1s
         log_reporter: {}
@@ -40,7 +40,7 @@ data:
       - name: clutch.module.resolver
       - name: clutch.module.aws
       - name: maira_io.module.aws
-      - name: clutch.module.envoytriage
+      - name: maira_io.module.gcp
       - name: clutch.module.k8s
       - name: maira_io.module.k8s
       - name: clutch.module.kinesis
@@ -61,11 +61,10 @@ data:
           regions:
             - us-east-1
             - us-west-2
-      - name: clutch.service.envoyadmin
+      - name: maira_io.service.gcp
         typed_config:
-          "@type": types.google.com/clutch.config.service.envoyadmin.v1.Config
-          secure: false
-          default_remote_port: 9876
+          "@type": types.google.com/maira_io.config.service.gcp.v1.Config
+          default_project: {{ .Values.gcp.default_project }}
       - name: clutch.service.k8s
         typed_config:
           "@type": types.google.com/clutch.config.service.k8s.v1.Config
@@ -92,6 +91,14 @@ data:
         typed_config:
           "@type": types.google.com/maira_io.config.service.http.v1.Config
           clusters:
+            - name: appdynamics-default
+              addresses:
+                - {{ .Values.appd.url }}
+              oauth2:
+                client_id: {{ .Values.appd.client_id }}
+                client_secret: {{ .Values.appd.client_secret }}
+                token_url: {{ .Values.appd.token_url }}
+              service_name: appdynamics
             - name: elastic-default
               addresses:
                 - "http://localhost:9200"
@@ -103,6 +110,13 @@ data:
                 key_file: ./certs/dev/localhost.key
                 ca_cert: ./certs/dev/CA.crt
                 insecure: false
+            - name: github-default
+              addresses:
+                - "https://api.github.com"
+              request_headers_add:
+                "Authorization": "Bearer token"
+                "content-type": "application/json"
+              service_name: github
       - name: maira_io.service.ssh
         typed_config:
           "@type": types.google.com/maira_io.config.service.ssh.v1.Config
