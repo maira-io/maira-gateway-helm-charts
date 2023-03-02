@@ -12,14 +12,177 @@ maira:
   auth_client_id: id1
   auth_client_secret: secret1
 
-appd:
-  url: url
-  client_id: client_id
-  client_secret:  client_secret
-  token_url: token_url
+aws:
+  disabled: false
+  regions:
+    - us-east-1
+    - us-west-2
+  rds_hosts:
+    host1:
+      dbName: testdb1
+      endpoint: "postgres-database-1.c1t02dtrttgf.us-east-1.rds.amazonaws.com"
+      user: sbansal
+      password:
+      awsRegion: us-east-1
+      driver: postgres
 
 gcp:
+  disabled: false
   default_project: project
+  default_zone: "us-central1-a"
+  host_data:
+    test-id:
+      db_user: "test-user"
+      db_pwd: ""
+      db_name: "testDB"
+      db_tcp_host: "35.225.52.185"
+      db_port: "3306"
+      db_driver: "mysql"
+
+k8s:
+  disabled: false
+
+kinesis:
+  disabled: false
+
+kafka:
+  disabled: false
+  clusters:
+    default:
+      broker_addresses:
+        - localhost:9093
+        - localhost:9094
+        - localhost:9095
+      jmx_addresses: [localhost:7026,localhost:7027,localhost:7028]
+      tls_config:
+        cert_file: ./certs/dev/localhost.crt
+        key_file: ./certs/dev/localhost.key
+        ca_cert: ./certs/dev/CA.crt
+        insecure: true
+      sasl_config:
+        user: user1
+        password: password1
+
+mongodb:
+  disabled: false
+  database: default
+  uri: "mongodb://localhost:27017"
+  username:
+  password:
+  auth_mechanism: <"MONGODB-AWS" or "MONGODB-X509" or "">
+  tls_config:
+    tls_ca_file: ./certs/dev/CA.crt
+    tls_certificate_key_file: ./certs/dev/localhost.key
+  aws_config:
+    access_key_id:
+    access_key_secret:
+    session_token:
+
+zookeeper:
+  disabled: false
+  clusters:
+    default:
+      addresses: [ localhost:2181,localhost:2182,localhost:2183 ]
+      tls_config:
+        enabled: true
+        cert_file: ./certs/dev/localhost.crt
+        key_file: ./certs/dev/localhost.key
+        ca_cert: ./certs/dev/CA.crt
+        insecure: true
+
+ssh:
+  disabled: false
+  servers:
+    - name: host1
+      address: "host1.maira.io"
+      username: root
+      password: password
+
+appd:
+  disabled: false
+  clusters:
+    appdynamics-default:
+      url: url
+      client_id: client_id
+      client_secret:  client_secret
+      token_url: token_url
+
+junos:
+  disabled: false
+  clusters:
+    junos-default:
+      url: "http://66.129.234.212:47004"
+      username: jcluser
+      password: "Juniper!1"
+
+splunk:
+  disabled: false
+  clusters:
+    splunk-default:
+      addresses:
+        - "https://localhost:8089"
+      token: "Bearer <token>"
+      tls_config:
+        cert_file: ./certs/dev/localhost.crt
+        key_file: ./certs/dev/localhost.key
+        ca_cert: ./certs/dev/CA.crt
+        insecure: true
+
+jira:
+  disabled: false
+  clusters:
+    jira-default:
+      addresses:
+        - "https://maira2.atlassian.net"
+      token: "Basic <token>"
+
+datadog:
+  disabled: false
+  clusters:
+    datadog-default:
+      addresses:
+        - "https://<region>.datadoghq.com/api/"
+      "api_key": "<api-key>"
+      "application_key": "<application-key>"
+
+es:
+  disabled: false
+  clusters:
+    elasticsearch-default:
+      url: "http://localhost:9200"
+
+prometheus:
+  disabled: false
+  clusters:
+    prometheus-default:
+      url: "http://localhost:9090"
+
+icinga:
+  disabled: false
+  clusters:
+    icinga-default:
+      url: "https://localhost:5665"
+      token: "Basic <Enter icinga Token Here>"
+      tls_config:
+        cert_file: ./certs/dev/localhost.crt
+        key_file: ./certs/dev/localhost.key
+        ca_cert: ./certs/dev/CA.crt
+        insecure: true
+
+pagerduty:
+  disabled: false
+  url: "https://api.pagerduty.com"
+  token: "Token token=<token>"
+
+gitlab:
+  disabled: false
+  url: "https://gitlab.com"
+  token: "Bearer <Enter Gitlab Token Here>"
+
+github:
+  disabled: false
+  url: "https://api.github.com"
+  token: "Bearer <Enter Github Token Here>"
 
 image:
   repository: gcr.io/maira-public/maira-agent
