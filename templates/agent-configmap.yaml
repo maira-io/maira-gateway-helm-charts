@@ -38,93 +38,300 @@ data:
       - name: clutch.module.assets
       - name: clutch.module.healthcheck
       - name: clutch.module.resolver
+    {{- if and (hasKey .Values "aws") (not .Values.aws.disabled) }}
       - name: clutch.module.aws
       - name: maira_io.module.aws
+    {{- end }}
+    {{- if and (hasKey .Values "zookeeper") (not .Values.zookeeper.disabled) }}
+      - name: maira_io.module.zookeeper
+    {{- end }}
+    {{- if and (hasKey .Values "mongodb") (not .Values.mongodb.disabled) }}
+      - name: maira_io.module.mongodb
+    {{- end }}
+    {{- if and (hasKey .Values "gcp") (not .Values.gcp.disabled) }}
       - name: maira_io.module.gcp
+    {{- end }}
+    {{- if and (hasKey .Values "k8s") (not .Values.k8s.disabled) }}
       - name: clutch.module.k8s
       - name: maira_io.module.k8s
+    {{- end }}
+    {{- if and (hasKey .Values "kinesis") (not .Values.kinesis.disabled) }}
       - name: clutch.module.kinesis
+    {{- end }}
+    {{- if and (hasKey .Values "kafka") (not .Values.kafka.disabled) }}
       - name: maira_io.module.kafka
+    {{- end }}
       - name: maira_io.module.http
       - name: maira_io.module.ssh
       - name: maira_io.module.maira
     services:
+    {{- if and (hasKey .Values "aws") (not .Values.aws.disabled) }}
       - name: clutch.service.aws
         typed_config:
           "@type": types.google.com/clutch.config.service.aws.v1.Config
           regions:
-            - us-east-1
-            - us-west-2
+    {{- toYaml $.Values.aws.regions | nindent 12 }}
       - name: maira_io.service.aws
         typed_config:
-          "@type": types.google.com/clutch.config.service.aws.v1.Config
-          regions:
-            - us-east-1
-            - us-west-2
+          "@type": types.google.com/maira_io.config.service.maira_aws.v1.Config
+          aws_config:
+            regions:
+    {{- toYaml $.Values.aws.regions | nindent 14 }}
+    {{- if hasKey .Values.aws "rds_hosts" }}
+          rds_hosts:
+    {{- range $key, $val := .Values.aws.rds_hosts }}
+            {{ $key }}:
+              dbName: {{ $val.dbName }}
+              endpoint: {{ $val.endpoint | quote }}
+              user: {{ $val.user }}
+              password: {{ $val.password }}
+              awsRegion: {{ $val.awsRegion }}
+              driver: {{ $val.driver }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "zookeeper") (not .Values.zookeeper.disabled) }}
+      - name: maira_io.service.zookeeper
+        typed_config:
+          "@type": types.google.com/maira_io.config.service.zookeeper.v1.Config
+          clusters:
+    {{- range $key, $val := .Values.zookeeper.clusters }}
+            {{ $key }}:
+              addresses: {{ $val.addresses }}
+    {{- if hasKey $val "tls_config" }}
+              tls_config:
+                cert_file: {{ $val.tls_config.cert_file }}
+                key_file: {{ $val.tls_config.key_file }}
+                ca_cert: {{ $val.tls_config.ca_cert }}
+                insecure: {{ $val.tls_config.insecure }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "gcp") (not .Values.gcp.disabled) }}
       - name: maira_io.service.gcp
         typed_config:
           "@type": types.google.com/maira_io.config.service.gcp.v1.Config
-          default_project: {{ .Values.gcp.default_project }}
+          default_project: {{ .Values.gcp.default_project | quote }}
+          default_zone: {{ .Values.gcp.default_zone | quote }}
+    {{- if hasKey .Values.gcp "host_data" }}
+          host_data:
+    {{- range $key, $val := .Values.gcp.host_data }}
+            {{ $key }}: 
+              db_user: {{ $val.db_user | quote }}
+              db_pwd: {{ $val.db_pwd | quote }}
+              db_name: {{ $val.db_name | quote }}
+              db_tcp_host: {{ $val.db_tcp_host | quote }}
+              db_port: {{ $val.db_port | quote }}
+              db_driver: {{ $val.db_driver | quote }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "k8s") (not .Values.k8s.disabled) }}
       - name: clutch.service.k8s
         typed_config:
           "@type": types.google.com/clutch.config.service.k8s.v1.Config
       - name: maira_io.service.k8s
         typed_config:
           "@type": types.google.com/clutch.config.service.k8s.v1.Config
+    {{- end }}
+    {{- if and (hasKey .Values "kafka") (not .Values.kafka.disabled) }}
       - name: maira_io.service.kafka
         typed_config:
           "@type": types.google.com/maira_io.config.service.kafka.v1.Config
           clusters:
-            cluster1:
-              broker_addresses: [localhost:9092]
-            default:
-              broker_addresses: [localhost:9093,localhost:9094,localhost:9095]
+      {{- range $key, $value := .Values.kafka.clusters }}
+            {{$key}}:
+              broker_addresses: {{ $value.broker_addresses }}
+              jmx_addresses: {{ $value.jmx_addresses }}
+        {{- if hasKey $value "tls_config" }}
               tls_config:
-                cert_file: ./certs/dev/localhost.crt
-                key_file: ./certs/dev/localhost.key
-                ca_cert: ./certs/dev/CA.crt
-                insecure: true
+                cert_file: {{ $value.tls_config.cert_file }}
+                key_file: {{ $value.tls_config.key_file }}
+                ca_cert: {{ $value.tls_config.ca_cert }}
+                insecure: {{ $value.tls_config.insecure }}
+        {{- end }}
+        {{- if hasKey $value "sasl_config" }}
               sasl_config:
-                user: user1
-                password: password1
+                user: {{ $value.sasl_config.user }}
+                password: {{ $value.sasl_config.password }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "mongodb") (not .Values.mongodb.disabled) }}
+      - name: maira_io.service.mongodb
+        typed_config:
+          "@type": types.google.com/maira_io.config.service.mongodb.v1.Config
+          cluster:
+            database: {{ .Values.mongodb.database }}
+            uri: {{ .Values.mongodb.uri | quote }}
+            username: {{ .Values.mongodb.username }}
+            password: {{ .Values.mongodb.password }}
+            auth_mechanism: {{ .Values.mongodb.auth_mechanism }}
+    {{- if eq .Values.mongodb.auth_mechanism "MONGODB-X509" }}
+            tls_config:
+              tls_ca_file: {{ .Values.mongodb.tls_config.tls_ca_file }}
+              tls_certificate_key_file: {{ .Values.mongodb.tls_config.tls_certificate_key_file }}
+    {{- end }}
+    {{- if eq .Values.mongodb.auth_mechanism "MONGODB-AWS" }}
+            aws_config:
+              access_key_id: {{ .Values.mongodb.aws_config.access_key_id }}
+              access_key_secret: {{ .Values.mongodb.aws_config.access_key_secret }}
+              session_token: {{ .Values.mongodb.aws_config.session_token }}
+    {{- end }}
+    {{- end }}
       - name: maira_io.service.http
         typed_config:
           "@type": types.google.com/maira_io.config.service.http.v1.Config
           clusters:
-            - name: appdynamics-default
+    {{- if and (hasKey .Values "junos") (not .Values.junos.disabled) }}
+    {{- range $key, $val := .Values.junos.clusters }}
+            - name: {{ $key }}
               addresses:
-                - {{ .Values.appd.url }}
+                - {{ $val.url | quote }}
+              request_headers_add:
+                "content-type": "application/xml"
+              service_name: junos
+              username: {{ $val.username }}
+              password: {{ $val.password | quote }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "pagerduty") (not .Values.pagerduty.disabled) }}
+            - name: pagerduty-default
+              addresses:
+                - {{ .Values.pagerduty.url | quote }}
+              request_headers_add:
+                "content-type": "application/json"
+                "Accept": "application/vnd.pagerduty+json;version=2"
+                "Authorization": {{ .Values.pagerduty.token | quote }}
+              service_name: pagerduty
+    {{- end }}
+    {{- if and (hasKey .Values "splunk") (not .Values.splunk.disabled) }}
+    {{- range $key, $val := .Values.splunk.clusters }}
+            - name: {{ $key }}
+              addresses:
+    {{- toYaml $val.addresses | nindent 16 }}
+              request_headers_add:
+                "content-type": "application/json"
+                "Authorization": {{ $val.token | quote}}
+              service_name: splunk
+    {{- if hasKey $val "tls_config" }}
+              tls_config:
+                cert_file: {{ $val.tls_config.cert_file }}
+                key_file: {{ $val.tls_config.key_file }}
+                ca_cert: {{ $val.tls_config.ca_cert }}
+                insecure: {{ $val.tls_config.insecure }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "jira") (not .Values.jira.disabled) }}
+    {{- range $key, $val := .Values.jira.clusters }}
+            - name: {{ $key }}
+              addresses:
+    {{- toYaml $val.addresses | nindent 16 }}
+              request_headers_add:
+                "Accept": "application/json"
+                "Authorization": {{ $val.token }}
+                "X-Atlassian-Token": "no-check"
+              service_name: jira
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "datadog") (not .Values.datadog.disabled) }}
+    {{- range $key, $val := .Values.datadog.clusters }}
+            - name: {{ $key }}
+              addresses:
+    {{- toYaml $val.addresses | nindent 16 }}
+              request_headers_add:
+                "Accept": "application/json"
+                "DD-API-KEY": {{ $val.api_key | quote}}
+                "DD-APPLICATION-KEY": {{ $val.application_key | quote}}
+              service_name: datadog
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "kafka") (not .Values.kafka.disabled) }}
+    {{- range $key, $val := .Values.kafka.clusters }}
+            - name: {{ $key }}
+              addresses:
+    {{- toYaml $val.broker_addresses | nindent 16 }}
+              service_name: kafka
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "prometheus") (not .Values.prometheus.disabled) }}
+    {{- range $key, $val := .Values.prometheus.clusters }}
+            - name: {{ $key }}
+              addresses:
+                - {{ $val.url | quote }}
+              request_headers_add:
+                "content-type": "application/x-www-form-urlencoded"
+              service_name: prometheus
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "icinga") (not .Values.icinga.disabled) }}
+    {{- range $key, $val := .Values.icinga.clusters }}
+            - name: {{ $key }}
+              addresses:
+                - {{ $val.url | quote }}
+              request_headers_add:
+                "content-type": "application/json"
+                "Accept": "application/json"
+                "Authorization": {{ $val.token | quote }}
+              service_name: icinga
+    {{- if hasKey $val "tls_config" }}
+              tls_config:
+                cert_file: {{ $val.tls_config.cert_file }}
+                key_file: {{ $val.tls_config.key_file }}
+                ca_cert: {{ $val.tls_config.ca_cert }}
+                insecure: {{ $val.tls_config.insecure }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "appd") (not .Values.appd.disabled) }}
+    {{- range $key, $val := .Values.appd.clusters }}
+            - name: {{ $key }}
+              addresses:
+                - {{ $val.url | quote }}
               oauth2:
-                client_id: {{ .Values.appd.client_id }}
-                client_secret: {{ .Values.appd.client_secret }}
-                token_url: {{ .Values.appd.token_url }}
+                client_id: {{ $val.client_id }}
+                client_secret: {{ $val.client_secret }}
+                token_url: {{ $val.token_url }}
               service_name: appdynamics
-            - name: elastic-default
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "es") (not .Values.es.disabled) }}
+    {{- range $key, $val := .Values.es.clusters }}
+            - name: {{ $key }}
               addresses:
-                - "http://localhost:9200"
+                - {{ $val.url | quote }}
               request_headers_add:
                 "content-type": "application/json"
               service_name: elasticsearch
-              tls_config:
-                cert_file: ./certs/dev/localhost.crt
-                key_file: ./certs/dev/localhost.key
-                ca_cert: ./certs/dev/CA.crt
-                insecure: false
+    {{- end }}
+    {{- end }}
+    {{- if and (hasKey .Values "github") (not .Values.github.disabled) }}
             - name: github-default
               addresses:
-                - "https://api.github.com"
+                - {{ .Values.github.url | quote }}
               request_headers_add:
-                "Authorization": "Bearer token"
+                "Authorization": {{ .Values.github.token | quote }}
                 "content-type": "application/json"
               service_name: github
+    {{- end }}
+    {{- if and (hasKey .Values "gitlab") (not .Values.gitlab.disabled) }}
+            - name: gitlab-default
+              addresses:
+                - {{ .Values.gitlab.url | quote }}
+              request_headers_add:
+                "Authorization": {{ .Values.gitlab.token | quote }}
+                "content-type": "application/json"
+              service_name: gitlab
+    {{- end }}
       - name: maira_io.service.ssh
         typed_config:
           "@type": types.google.com/maira_io.config.service.ssh.v1.Config
           servers:
-            - name: host1
-              address: ssh:2022
-              username: root
-              password: screencast
+            - name: {{ (first .Values.ssh.servers).name }}
+              address: {{ (first .Values.ssh.servers).address | quote }}
+              username: {{ (first .Values.ssh.servers).username }}
+              password: {{ (first .Values.ssh.servers).password }}
       - name: maira_io.service.maira
         typed_config:
           "@type": types.google.com/maira_io.config.service.maira.v1.Config
@@ -137,8 +344,12 @@ data:
           auth_client_secret: {{ .Values.maira.auth_client_secret }}
           auth_audience: https://api.maira-dev.maira.io/gateway
     resolvers:
+    {{- if and (hasKey .Values "aws") (not .Values.aws.disabled) }}
       - name: clutch.resolver.aws
+    {{- end }}
+    {{- if and (hasKey .Values "k8s") (not .Values.k8s.disabled) }}
       - name: clutch.resolver.k8s
+    {{- end }}
 ---
 apiVersion: v1
 kind: ConfigMap
