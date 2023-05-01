@@ -9,8 +9,7 @@ maira:
   site: maira-site-1
   tenant: maira.io
   namespace: default
-  auth_client_id: id1
-  auth_client_secret: secret1
+  api_key: key
 
 aws:
   disabled: false

@@ -343,6 +343,7 @@ data:
           auth_client_id: {{ .Values.maira.auth_client_id }}
           auth_client_secret: {{ .Values.maira.auth_client_secret }}
           auth_audience: https://api.maira-dev.maira.io/gateway
+          api_key: {{ .Values.maira.api_key }} 
     resolvers:
     {{- if and (hasKey .Values "aws") (not .Values.aws.disabled) }}
       - name: clutch.resolver.aws
